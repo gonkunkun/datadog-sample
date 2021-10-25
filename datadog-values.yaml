@@ -1,0 +1,6 @@
+  logs:
+    enabled: true
+    containerCollectAll: true
+  apm:
+    portEnabled: true
+    # enabled: true # Deprecated this config

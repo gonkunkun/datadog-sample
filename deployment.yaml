@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # annotations:
+  #   ad.datadoghq.com/sample-api.logs: '[{"source":"express","service":"api"}]'
+  labels:
+    app: sample-api
+    tags.datadoghq.com/env: "test"
+    tags.datadoghq.com/service: "api"
+    tags.datadoghq.com/version: "1.0.0"
+  name: sample-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-api
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        ad.datadoghq.com/sample-api.logs: '[{"source":"express","service":"api"}]'
+      labels:
+        app: sample-api
+        tags.datadoghq.com/env: "test"
+        tags.datadoghq.com/service: "api"
+        tags.datadoghq.com/version: "1.0.0"
+    spec:
+      containers:
+      - image: gogogonkun/sample-api
+        name: sample-api
+        env:
+          - name: DD_AGENT_HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: DD_ENV
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['tags.datadoghq.com/env']
+          - name: DD_VERSION
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['tags.datadoghq.com/version']
+          - name: DD_LOGS_INJECTION
+            value: "true"
+          - name: DD_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: dd-api-key
+                key: DD_API_KEY

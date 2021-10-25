@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  datadog-agent:
+    image: datadog/agent:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    environment:
+      - DD_API_KEY=e44101bba582a298fb2c78e3b77e8361
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      - DD_SITE=datadoghq.com
+  web:
+    build: .
+    command: ddtrace-run python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    environment:
+      - DD_ENV="test"
+      - DD_SERVICE="python-api"
+      - DD_VERSION="1.0.0"
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_LOGS_INJECTION=true
+    labels:
+      - com.datadoghq.tags.env="test"
+      - com.datadoghq.tags.service="python-api"
+      - com.datadoghq.tags.version="1.0.0"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - datadog-agent
